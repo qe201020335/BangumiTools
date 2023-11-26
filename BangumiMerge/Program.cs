@@ -9,7 +9,7 @@ using BangumiMerge;
 Console.OutputEncoding = Encoding.UTF8;
 Console.Title = "BangumiMerge";
 
-var outputPath = @"T:/Video";
+var outputPath = Path.GetFullPath(@"Z:/Video");
 var inputFiles = args;
 bool CopyModifiedTime = true;
 bool CopyFileName = true;
