@@ -5,7 +5,7 @@ namespace BangumiMerge;
 
 public static class Utils
 {
-    public static int StartProcess(string exe, string arguments)
+    public static int StartProcess(string exe, string arguments, CancellationToken? ctx = null)
     {
         Console.WriteLine($"Launching {exe} with arguments: \n{arguments}");
         var process = new Process
@@ -21,6 +21,16 @@ public static class Utils
                 RedirectStandardError = true,
             }
         };
+        
+        if (ctx != null)
+        {
+            ctx.Value.Register(() =>
+            {
+                Console.WriteLine($"Killing {exe}...");
+                process.Kill();
+            });
+        }
+        
         process.Start();
         process.OutputDataReceived += (sender, args) => Console.WriteLine(args.Data);
         process.ErrorDataReceived += (sender, args) => Console.WriteLine(args.Data);

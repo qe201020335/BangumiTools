@@ -14,11 +14,18 @@ var inputFiles = args;
 bool CopyModifiedTime = true;
 bool CopyFileName = true;
 
+
+var cSource = new CancellationTokenSource();
+var cToken = cSource.Token;
+
+Console.CancelKeyPress += delegate { cSource.Cancel(); };
+
+
 if (inputFiles.Length == 0)
 {
     Console.WriteLine("Drag and drop files to this exe to merge them.");
-    Console.WriteLine("Press any key to exit.");
-    Console.ReadKey();
+    Console.WriteLine("Press Enter to exit.");
+    Console.ReadLine();
     return;
 }
 
@@ -29,7 +36,7 @@ if (inputFiles.Length == 0)
 
 var totalFiles = inputFiles.Length;
 
-foreach (var (inputFile, i) in inputFiles.Select((value, i) => ( value, i )))
+foreach (var (inputFile, i) in inputFiles.Select((value, i) => (value, i)))
 {
     Console.Title = $"BangumiMerge - [{i + 1}/{totalFiles}] {Path.GetFileName(inputFile)}";
     if (!Run(inputFile))
@@ -68,13 +75,17 @@ bool Run(string inPath)
             // mark language for all the tracks
             inputArguments.Append($" --language -1:{language}");
         }
-        
+
         inputArguments.Append(' ').Append(fileName.Quote());
     }
 
+    cToken.ThrowIfCancellationRequested();
+
     try
     {
-        var result1 = Utils.StartProcess("mkvmerge.exe", $"-o {outPath.Quote()} {inputArguments}");
+        var result1 = Utils.StartProcess("mkvmerge.exe", $"-o {outPath.Quote()} {inputArguments}", cToken);
+        cToken.ThrowIfCancellationRequested();
+        
         switch (result1)
         {
             case 0:
@@ -84,20 +95,22 @@ bool Run(string inPath)
                 Console.Error.WriteLine($"Error! mkvmerge can't mux the file! ({result1})");
                 return false;
         }
-        
+
         string fonts = "";
         string fontsFolder;
         if (Directory.Exists(Path.Combine(inParent, "fonts")))
         {
             fontsFolder = Path.Combine(inParent, "fonts");
-        } else if (Directory.Exists(Path.Combine(inParent, "Fonts")))
+        }
+        else if (Directory.Exists(Path.Combine(inParent, "Fonts")))
         {
             fontsFolder = Path.Combine(inParent, "Fonts");
-        } else
+        }
+        else
         {
             fontsFolder = "";
         }
-        
+
         if (!string.IsNullOrWhiteSpace(fontsFolder))
         {
             fonts = Directory
@@ -106,7 +119,8 @@ bool Run(string inPath)
                 .ToString();
         }
 
-        var result2 = Utils.StartProcess("mkvpropedit.exe", $"{outPath.Quote()}{fonts}");
+        var result2 = Utils.StartProcess("mkvpropedit.exe", $"{outPath.Quote()}{fonts}", cToken);
+        cToken.ThrowIfCancellationRequested();
         if (result2 != 0)
         {
             Console.Error.WriteLine($"Error! mkvpropedit returned non-zero exit code! ({result2})");
@@ -137,6 +151,12 @@ bool Run(string inPath)
                 outFile.MoveTo(newName, true);
             }
         }
+        cToken.ThrowIfCancellationRequested();
+    }
+    catch (OperationCanceledException)
+    {
+        Console.WriteLine("Operation cancelled.");
+        return false;
     }
     catch (Exception e)
     {
