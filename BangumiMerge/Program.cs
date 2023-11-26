@@ -7,6 +7,7 @@ using System.Text;
 using BangumiMerge;
 
 Console.OutputEncoding = Encoding.UTF8;
+Console.Title = "BangumiMerge";
 
 var outputPath = @"T:/Video";
 var inputFiles = args;
@@ -21,8 +22,16 @@ if (inputFiles.Length == 0)
     return;
 }
 
-foreach (var inputFile in inputFiles)
+// if (inputFiles.Length == 1 && Directory.Exists(inputFiles[0]))
+// {
+//     inputFiles = Directory.GetFiles(inputFiles[0]);
+// }
+
+var totalFiles = inputFiles.Length;
+
+foreach (var (inputFile, i) in inputFiles.Select((value, i) => ( value, i )))
 {
+    Console.Title = $"BangumiMerge - [{i + 1}/{totalFiles}] {Path.GetFileName(inputFile)}";
     if (!Run(inputFile))
     {
         Console.WriteLine("Error! Press any key to exit.");
