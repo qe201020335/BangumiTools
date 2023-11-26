@@ -77,10 +77,22 @@ bool Run(string inPath)
         }
         
         string fonts = "";
+        string fontsFolder;
         if (Directory.Exists(Path.Combine(inParent, "fonts")))
         {
+            fontsFolder = Path.Combine(inParent, "fonts");
+        } else if (Directory.Exists(Path.Combine(inParent, "Fonts")))
+        {
+            fontsFolder = Path.Combine(inParent, "Fonts");
+        } else
+        {
+            fontsFolder = "";
+        }
+        
+        if (!string.IsNullOrWhiteSpace(fontsFolder))
+        {
             fonts = Directory
-                .GetFiles(Path.Combine(inParent, "fonts"))
+                .GetFiles(fontsFolder)
                 .Aggregate(new StringBuilder(" "), (s, fileName) => s.Append($" --add-attachment {fileName.Quote()}"))
                 .ToString();
         }
