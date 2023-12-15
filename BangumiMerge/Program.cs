@@ -9,7 +9,27 @@ using BangumiMerge;
 Console.OutputEncoding = Encoding.UTF8;
 Console.Title = "BangumiMerge";
 
-var outputPath = Path.GetFullPath(@"Z:/Video");
+// get output folder
+var outPathEnvVar = Environment.GetEnvironmentVariable("BANGUMIMERGE_OUTPUT_PATH");
+string outputPath;
+if (!string.IsNullOrWhiteSpace(outPathEnvVar) && Directory.Exists(outPathEnvVar))
+{
+    outputPath = Path.GetFullPath(outPathEnvVar);
+}
+else
+{
+    if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+    {
+        outputPath = Path.GetFullPath(@"Z:/Video");
+    }
+    else
+    {
+        Console.WriteLine("Output folder not specified using BANGUMIMERGE_OUTPUT_PATH or not exists.");
+        Environment.Exit(-1);
+        return;
+    }
+}
+
 var inputFiles = args;
 bool CopyModifiedTime = true;
 bool CopyFileName = true;
@@ -26,6 +46,7 @@ if (inputFiles.Length == 0)
     Console.WriteLine("Drag and drop files to this exe to merge them.");
     Console.WriteLine("Press Enter to exit.");
     Console.ReadLine();
+    Environment.Exit(1);
     return;
 }
 
@@ -38,11 +59,12 @@ var totalFiles = inputFiles.Length;
 
 foreach (var (inputFile, i) in inputFiles.Select((value, i) => (value, i)))
 {
-    Console.Title = $"BangumiMerge - [{i + 1}/{totalFiles}] {Path.GetFileName(inputFile)}";
+    Console.Title = $"[{i + 1}/{totalFiles}] {Path.GetFileName(inputFile)}";
     if (!Run(inputFile))
     {
-        Console.WriteLine("Error! Press any key to exit.");
-        Console.ReadKey();
+        Console.WriteLine("Error! Press enter to exit.");
+        Console.ReadLine();
+        Environment.Exit(-1);
         return;
     }
 }
