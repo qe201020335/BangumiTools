@@ -50,10 +50,6 @@ if (inputFiles.Length == 0)
     return;
 }
 
-// if (inputFiles.Length == 1 && Directory.Exists(inputFiles[0]))
-// {
-//     inputFiles = Directory.GetFiles(inputFiles[0]);
-// }
 
 var totalFiles = inputFiles.Length;
 
@@ -132,7 +128,7 @@ bool Run(string inPath)
 
     try
     {
-        var result1 = Utils.StartProcess("mkvmerge.exe", $"-o {outPath.Quote()} {inputArguments}", cToken);
+        var result1 = Utils.StartProcess("mkvmerge", $"-o {outPath.Quote()} {inputArguments}", cToken);
         cToken.ThrowIfCancellationRequested();
         
         switch (result1)
@@ -168,7 +164,7 @@ bool Run(string inPath)
                 .ToString();
         }
 
-        var result2 = Utils.StartProcess("mkvpropedit.exe", $"{outPath.Quote()}{fonts}", cToken);
+        var result2 = Utils.StartProcess("mkvpropedit", $"{outPath.Quote()}{fonts}", cToken);
         cToken.ThrowIfCancellationRequested();
         if (result2 != 0)
         {
