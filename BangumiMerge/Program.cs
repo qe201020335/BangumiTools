@@ -15,6 +15,7 @@ string outputPath;
 if (!string.IsNullOrWhiteSpace(outPathEnvVar) && Directory.Exists(outPathEnvVar))
 {
     outputPath = Path.GetFullPath(outPathEnvVar);
+    Console.WriteLine("Using output folder: " + outputPath);
 }
 else
 {
