@@ -109,7 +109,11 @@ bool Run(string inPath)
             {
                 lang = "zh";
             }
-            else if (lower.Length > 4)
+            else if (lower == "jap")
+            {
+                lang = "jpn";
+            }
+            else if (lower.Length > 3)
             {
                 lang = "und";
             }
