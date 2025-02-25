@@ -153,7 +153,6 @@ bool Run(string inPath)
                 return false;
         }
 
-        string fonts = "";
         string fontsFolder;
         if (Directory.Exists(Path.Combine(inParent, "fonts")))
         {
@@ -165,25 +164,34 @@ bool Run(string inPath)
         }
         else
         {
+            Console.WriteLine("Fonts folder not found.");
             fontsFolder = "";
         }
 
         if (!string.IsNullOrWhiteSpace(fontsFolder))
         {
-            fonts = Directory
+            var fonts = Directory
                 .GetFiles(fontsFolder)
-                .Aggregate(new StringBuilder(" "), (s, fileName) => s.Append($" --add-attachment {fileName.Quote()}"))
+                .Aggregate(new StringBuilder(""), (s, fileName) => s.Append($" --add-attachment {fileName.Quote()}"))
                 .ToString();
-        }
 
-        var result2 = Utils.StartProcess("mkvpropedit", $"{outPath.Quote()}{fonts}", cToken);
-        cToken.ThrowIfCancellationRequested();
-        if (result2 != 0)
-        {
-            Console.Error.WriteLine($"Error! mkvpropedit returned non-zero exit code! ({result2})");
-            return false;
+            if (string.IsNullOrWhiteSpace(fonts))
+            {
+                Console.WriteLine("Fonts folder is empty.");
+            }
+            else
+            {
+                var result2 = Utils.StartProcess("mkvpropedit", $"{outPath.Quote()} {fonts}", cToken);
+                cToken.ThrowIfCancellationRequested();
+                if (result2 != 0)
+                {
+                    Console.Error.WriteLine($"Error! mkvpropedit returned non-zero exit code! ({result2})");
+                    return false;
+                }
+            }
+            
         }
-
+        
         var inFile = new FileInfo(inPath);
         var outFile = new FileInfo(outPath);
 
@@ -192,12 +200,6 @@ bool Run(string inPath)
         {
             outFile.LastWriteTime = inFile.LastWriteTime;
         }
-
-        // if (Configuration.DeleteOriginal)
-        // {
-        //     inFile.Delete();
-        //     Console.WriteLine($"old file deleted: {inPath}");
-        // }
 
         if (CopyFileName)
         {
