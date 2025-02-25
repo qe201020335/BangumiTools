@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# echo "Hello, World!"
 set -e
+set -u
+set -o pipefail
 # set -x
 
 Extra="./Extra/"
@@ -31,7 +32,18 @@ if [ -f "$Font7z" ]; then
     mv "$Font7z" "$Extra"
 else
     echo "Fonts 7z not found."
-    # TODO check existing fonts and zip it
+    # check existing fonts and zip it
+    if [ -d "./fonts" ]; then
+        echo "Zipping fonts from ./fonts"
+        zip "${Extra}Fonts.zip" ./fonts/*
+        ls -lh "${Extra}Fonts.zip"
+    elif [ -d "./Fonts" ]; then
+        echo "Zipping fonts from ./Fonts"
+        zip "${Extra}Fonts.zip" ./Fonts/*
+        ls -lh "${Extra}Fonts.zip"
+    else
+        echo "No fonts found."
+    fi
 fi
 
 # process subs
@@ -46,7 +58,6 @@ echo "$TcSubs"
 if [[ $TcSubs != '' ]]; then
     read -p "Delete above tc subs? <y/N> " prompt
     if [[ $prompt =~ [yY](es)* ]]; then
-        # TODO
         echo "rm"
         echo "$TcSubs" | xargs -d '\n' rm
     else
