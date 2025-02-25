@@ -109,6 +109,14 @@ bool Run(string inPath)
             {
                 lang = "zh";
             }
+            else if (lower.Contains("gb"))
+            {
+                lang = "zh";
+            }
+            else if (lower.Contains("big5"))
+            {
+                lang = "zh";
+            }
             else if (lower == "jap")
             {
                 lang = "jpn";
