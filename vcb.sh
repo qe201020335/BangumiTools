@@ -53,7 +53,7 @@ ls -lh "${Extra}subs.zip"
 # find tc subs
 # ^(?i).*\.(((jpn?|jap?).?)?(tc|cht)(.?(jpn?|jap?))?)\.ass$
 # ^(?i).*\.([A-Za-z0-9_&]*(tc|cht)[A-Za-z0-9_&]*)\.ass$
-TcSubs=`find . -maxdepth 1 -name "*.ass" -type f | grep -P '^(?i).*\.([A-Za-z0-9_&]*(tc|cht|big5)[A-Za-z0-9_&]*)\.ass$' | xargs --no-run-if-empty -d '\n' -n 1 basename | sort`
+TcSubs=$(find . -maxdepth 1 -name "*.ass" -type f | { grep -P '^(?i).*\.([A-Za-z0-9_&]*(tc|cht|big5)[A-Za-z0-9_&]*)\.ass$' || test $? = 1; } | xargs --no-run-if-empty -d '\n' -n 1 basename | sort)
 echo "$TcSubs"
 if [[ $TcSubs != '' ]]; then
     read -p "Delete above tc subs? <y/N> " prompt
