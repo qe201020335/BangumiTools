@@ -91,8 +91,8 @@ bool Run(string inPath)
     {
         if (!string.IsNullOrWhiteSpace(language))
         {
-            string lang;
-            var lower = language.ToLower();
+            var lang = "";
+            var lower = language.ToLowerInvariant();
             if (lower.Contains("chs"))
             {
                 lang = "zh";
@@ -121,17 +121,16 @@ bool Run(string inPath)
             {
                 lang = "jpn";
             }
-            else if (lower.Length > 3)
-            {
-                lang = "und";
-            }
-            else
+            else if (lower.Length <= 3)
             {
                 lang = language;
             }
-            
-            // mark language for all the tracks
-            inputArguments.Append($" --language -1:{lang}");
+
+            if (!string.IsNullOrWhiteSpace(lang))
+            {
+                // mark language for all the tracks
+                inputArguments.Append($" --language -1:{lang}");
+            }
         }
 
         inputArguments.Append(' ').Append(fileName.Quote());
