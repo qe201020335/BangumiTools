@@ -35,12 +35,12 @@ else
     # check existing fonts and zip it
     if [ -d "./fonts" ]; then
         echo "Zipping fonts from ./fonts"
-        zip "${Extra}fonts.zip" ./fonts/*
-        ls -lh "${Extra}fonts.zip"
+        7za a "${Extra}Fonts.7z" ./fonts/*
+        ls -lh "${Extra}Fonts.7z"
     elif [ -d "./Fonts" ]; then
         echo "Zipping fonts from ./Fonts"
-        zip "${Extra}fonts.zip" ./Fonts/*
-        ls -lh "${Extra}fonts.zip"
+        7za a "${Extra}Fonts.7z" ./Fonts/*
+        ls -lh "${Extra}Fonts.7z"
     else
         echo "No fonts found."
     fi
