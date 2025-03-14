@@ -22,7 +22,9 @@ optMoveToExtra ./SPs
 
 
 # process fonts
-Font7z=`find . -maxdepth 1 -name "*Fonts*.7z" -print -quit` # -quit to only find the first one
+Font7z=`find . -maxdepth 1 -iname "*fonts*.7z" -print -quit` # -quit to only find the first one
+FontRar=`find . -maxdepth 1 -iname "*fonts*.rar" -print -quit`
+FontZip=`find . -maxdepth 1 -iname "*fonts*.zip" -print -quit`
 
 if [ -f "$Font7z" ]; then
     echo "Extracting Fonts: $Font7z"
@@ -30,8 +32,20 @@ if [ -f "$Font7z" ]; then
     echo "fonts: "
     ls ./fonts
     mv "$Font7z" "$Extra"
+elif [ -f "$FontRar" ]; then
+    echo "Extracting Fonts: $FontRar"
+    unrar e -op./fonts -- "$FontRar"
+    echo "fonts: "
+    ls ./fonts
+    mv "$FontRar" "$Extra"
+elif [ -f "$FontZip" ]; then
+    echo "Extracting Fonts: $FontZip"
+    unzip -j "$FontZip" -d ./fonts
+    echo "fonts: "
+    ls ./fonts
+    mv "$FontZip" "$Extra"
 else
-    echo "Fonts 7z not found."
+    echo "Fonts 7z/rar/zip not found."
     # check existing fonts and zip it
     if [ -d "./fonts" ]; then
         echo "Zipping fonts from ./fonts"
