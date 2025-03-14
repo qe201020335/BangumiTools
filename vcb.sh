@@ -22,13 +22,13 @@ optMoveToExtra ./SPs
 
 
 # process fonts
-Font7z=`find . -maxdepth 1 -iname "*fonts*.7z" -print -quit` # -quit to only find the first one
-FontRar=`find . -maxdepth 1 -iname "*fonts*.rar" -print -quit`
-FontZip=`find . -maxdepth 1 -iname "*fonts*.zip" -print -quit`
+Font7z=`find . -maxdepth 1 -iname "*font*.7z" -print -quit` # -quit to only find the first one
+FontRar=`find . -maxdepth 1 -iname "*font*.rar" -print -quit`
+FontZip=`find . -maxdepth 1 -iname "*font*.zip" -print -quit`
 
 if [ -f "$Font7z" ]; then
     echo "Extracting Fonts: $Font7z"
-    7za x "$Font7z" -o"./fonts" -y -bso0
+    7za e "$Font7z" -o"./fonts" -y -bso0
     echo "fonts: "
     ls ./fonts
     mv "$Font7z" "$Extra"
