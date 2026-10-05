@@ -85,62 +85,62 @@ bool Run(string inPath)
         let language = extra.Contains('.') ? extra.Split('.')[^1] : ""
         select new Tuple<string, string>(fileName, language);
 
-    var inputArguments = new StringBuilder(inPath.Quote());
-
-    foreach (var (fileName, language) in thingsToMerge)
+    // args for all the files to merge, sorted by language
+    var filesArgs = thingsToMerge.Select(tuple =>
     {
+        var (fileName, language) = tuple;
+        IEnumerable<string> fileArg;
         if (!string.IsNullOrWhiteSpace(language))
         {
-            var lang = "";
-            var lower = language.ToLowerInvariant();
-            if (lower.Contains("chs"))
+            if (language.Contains("chs", StringComparison.InvariantCultureIgnoreCase) ||
+                language.Contains("sc", StringComparison.InvariantCultureIgnoreCase) ||
+                language.Contains("gb", StringComparison.InvariantCultureIgnoreCase))
             {
-                lang = "zh";
+                language = "zh-Hans";
+                fileArg = ["--language", "-1:zh-Hans", "--track-name", "-1:简体中文"];
             }
-            else if (lower.Contains("cht"))
+            else if (language.Contains("cht", StringComparison.InvariantCultureIgnoreCase) ||
+                     language.Contains("tc", StringComparison.InvariantCultureIgnoreCase) ||
+                     language.Contains("big5", StringComparison.InvariantCultureIgnoreCase))
             {
-                lang = "zh";
+                language = "zh-Hant";
+                fileArg = ["--language", "-1:zh-Hant", "--track-name", "-1:繁體中文"];
             }
-            else if (lower.Contains("sc"))
+            else if (language.Equals("jp", StringComparison.InvariantCultureIgnoreCase) ||
+                     language.Equals("jap", StringComparison.InvariantCultureIgnoreCase) ||
+                     language.Equals("jpn", StringComparison.InvariantCultureIgnoreCase))
             {
-                lang = "zh";
+                language = "jpn";
+                fileArg = ["--language", "-1:jpn"];
             }
-            else if (lower.Contains("tc"))
+            else if (language.Length <= 3)
             {
-                lang = "zh";
+                fileArg = ["--language", $"-1:{language}"];
             }
-            else if (lower.Contains("gb"))
+            else
             {
-                lang = "zh";
-            }
-            else if (lower.Contains("big5"))
-            {
-                lang = "zh";
-            }
-            else if (lower == "jap")
-            {
-                lang = "jpn";
-            }
-            else if (lower.Length <= 3)
-            {
-                lang = language;
-            }
-
-            if (!string.IsNullOrWhiteSpace(lang))
-            {
-                // mark language for all the tracks
-                inputArguments.Append($" --language -1:{lang}");
+                fileArg = [];
+                language = "";
             }
         }
+        else
+        {
+            fileArg = [];
+            language = "";
+        }
 
-        inputArguments.Append(' ').Append(fileName.Quote());
-    }
+        fileArg = fileArg.Concat(["--default-track-flag", "-1:false"]).Append(fileName);
+        return new KeyValuePair<string, IEnumerable<string>>(language, fileArg);
+    }).OrderBy(pair => pair.Key).SelectMany(pair => pair.Value);
+
+    IEnumerable<string> mergeArgs = ["-o", outPath, inPath];
+    mergeArgs = mergeArgs.Concat(filesArgs);
 
     cToken.ThrowIfCancellationRequested();
 
     try
     {
-        var result1 = Utils.StartProcess("mkvmerge", $"-o {outPath.Quote()} {inputArguments}", cToken);
+        var result1 = Utils.StartProcess("mkvmerge", mergeArgs, cToken);
         cToken.ThrowIfCancellationRequested();
         
         switch (result1)
@@ -170,18 +170,17 @@ bool Run(string inPath)
 
         if (!string.IsNullOrWhiteSpace(fontsFolder))
         {
-            var fonts = Directory
-                .GetFiles(fontsFolder)
-                .Aggregate(new StringBuilder(""), (s, fileName) => s.Append($" --add-attachment {fileName.Quote()}"))
-                .ToString();
+            var fonts = Directory.GetFiles(fontsFolder);
 
-            if (string.IsNullOrWhiteSpace(fonts))
+            if (fonts.Length == 0)
             {
                 Console.WriteLine("Fonts folder is empty.");
             }
             else
             {
-                var result2 = Utils.StartProcess("mkvpropedit", $"{outPath.Quote()} {fonts}", cToken);
+                var editArgs = fonts.SelectMany<string, string>(fileName => ["--add-attachment", fileName])
+                    .Prepend(outPath);
+                var result2 = Utils.StartProcess("mkvpropedit", editArgs, cToken);
                 cToken.ThrowIfCancellationRequested();
                 if (result2 != 0)
                 {

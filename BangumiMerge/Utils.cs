@@ -5,23 +5,22 @@ namespace BangumiMerge;
 
 public static class Utils
 {
-    public static int StartProcess(string exe, string arguments, CancellationToken? ctx = null)
+    public static int StartProcess(string exe, IEnumerable<string> arguments, CancellationToken? ctx = null)
     {
-        Console.WriteLine($"Launching {exe} with arguments: \n{arguments}");
+        var psi = new ProcessStartInfo(exe, arguments)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardInput = true,
+            RedirectStandardError = true
+        };
+
         var process = new Process
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = exe,
-                Arguments = arguments,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardInput = true,
-                RedirectStandardError = true,
-            }
+            StartInfo = psi
         };
-        
+
         if (ctx != null)
         {
             ctx.Value.Register(() =>
@@ -30,7 +29,9 @@ public static class Utils
                 process.Kill();
             });
         }
-        
+
+        Console.WriteLine($"Launching process:\n{exe} '{string.Join("' '", psi.ArgumentList)}'");
+
         process.Start();
         process.OutputDataReceived += (sender, args) => Console.WriteLine(args.Data);
         process.ErrorDataReceived += (sender, args) => Console.WriteLine(args.Data);
@@ -39,10 +40,5 @@ public static class Utils
         process.WaitForExit(-1);
         Console.WriteLine($"{exe} exited with code {process.ExitCode}");
         return process.ExitCode;
-    }
-
-    public static string Quote(this string s)
-    {
-        return "\"" + s + "\"";
     }
 }
