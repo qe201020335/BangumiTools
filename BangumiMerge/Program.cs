@@ -32,8 +32,8 @@ else
 }
 
 var inputFiles = args;
-bool CopyModifiedTime = true;
-bool CopyFileName = true;
+var CopyModifiedTime = false;
+var CopyFileName = false;
 
 
 var cSource = new CancellationTokenSource();
