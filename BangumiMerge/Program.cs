@@ -117,6 +117,14 @@ bool Run(string inPath)
             {
                 fileArg = ["--language", $"-1:{language}"];
             }
+            else if (!Path.GetExtension(fileName).Equals(".mkv") &&
+                     !Path.GetExtension(fileName).Equals(".mka") &&
+                     !Path.GetExtension(fileName).Equals(".mp4") &&
+                     !Path.GetExtension(fileName).Equals(".mov"))
+            {
+                fileArg = ["--track-name", $"-1:{language}"];
+                language = "";
+            }
             else
             {
                 fileArg = [];
